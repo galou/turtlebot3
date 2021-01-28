@@ -76,6 +76,30 @@ add_executable(${EXECUTABLE_NAME} src/node_main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${PROJECT_NAME}_lib)
 ament_target_dependencies(${EXECUTABLE_NAME} ${DEPENDENCIES})
 
+add_library(${PROJECT_NAME}_conveyor_lib
+  "src/conveyor_devices/motor_power.cpp"
+  "src/conveyor_devices/sound.cpp"
+  "src/conveyor_devices/reset.cpp"
+
+  "src/diff_drive_controller.cpp"
+  "src/dynamixel_sdk_wrapper.cpp"
+  "src/odometry.cpp"
+  "src/conveyor.cpp"
+
+  "src/conveyor_sensors/battery_state.cpp"
+  "src/conveyor_sensors/imu.cpp"
+  "src/conveyor_sensors/joint_state.cpp"
+  "src/conveyor_sensors/sensor_state.cpp"
+)
+
+target_link_libraries(${PROJECT_NAME}_conveyor_lib)
+ament_target_dependencies(${PROJECT_NAME}_conveyor_lib ${DEPENDENCIES})
+
+set(CONVEYOR_EXECUTABLE_NAME "turtlebot3_conveyor_node")
+
+add_executable(${CONVEYOR_EXECUTABLE_NAME} src/conveyor_node.cpp)
+target_link_libraries(${CONVEYOR_EXECUTABLE_NAME} ${PROJECT_NAME}_conveyor_lib)
+ament_target_dependencies(${CONVEYOR_EXECUTABLE_NAME} ${DEPENDENCIES})
 ################################################################################
 # Install
 ################################################################################
@@ -83,7 +107,7 @@ install(DIRECTORY param
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(TARGETS ${EXECUTABLE_NAME}
+install(TARGETS ${EXECUTABLE_NAME} ${CONVEYOR_EXECUTABLE_NAME}
   DESTINATION lib/${PROJECT_NAME}
 )
 
