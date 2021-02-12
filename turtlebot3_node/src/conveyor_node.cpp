@@ -58,8 +58,8 @@ int main(int argc, char * argv[])
   // TODO add the controller for the correct kinematics.
   auto diff_drive_controller{
     std::make_shared<robotis::turtlebot3::DiffDriveController>(
-    conveyor->get_wheels()->separation,
-    conveyor->get_wheels()->radius)};
+    1.0,
+    1.0)};
 
   executor.add_node(conveyor);
   executor.add_node(diff_drive_controller);

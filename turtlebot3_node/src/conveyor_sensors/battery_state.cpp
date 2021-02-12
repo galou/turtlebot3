@@ -16,10 +16,13 @@
 
 #include <turtlebot3_node/conveyor_sensors/battery_state.hpp>
 
+#include <turtlebot3_node/conveyor_control_table.hpp>  // robotis::turtlebot3::g_extern_control_table.
+
 #include <memory>
 #include <string>
 #include <utility>
 
+using robotis::turtlebot3::g_extern_control_table;
 using robotis::turtlebot3::sensors::BatteryState;
 
 BatteryState::BatteryState(
@@ -43,12 +46,12 @@ void BatteryState::publish(
   msg->design_capacity = 1.8f;
 
   msg->voltage = 0.01f * dxl_sdk_wrapper->get_data_from_device<int32_t>(
-    extern_control_table.battery_voltage.addr,
-    extern_control_table.battery_voltage.length);
+    g_extern_control_table.battery_voltage.addr,
+    g_extern_control_table.battery_voltage.length);
 
   msg->percentage = 0.01f * dxl_sdk_wrapper->get_data_from_device<int32_t>(
-    extern_control_table.battery_percentage.addr,
-    extern_control_table.battery_percentage.length);
+    g_extern_control_table.battery_percentage.addr,
+    g_extern_control_table.battery_percentage.length);
 
   msg->voltage <= 7.0 ? msg->present = false : msg->present = true;
 

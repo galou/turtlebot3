@@ -16,9 +16,12 @@
 
 #include <turtlebot3_node/conveyor_devices/reset.hpp>
 
+#include <turtlebot3_node/conveyor_control_table.hpp>  // robotis::turtlebot3::g_extern_control_table.
+
 #include <memory>
 #include <string>
 
+using robotis::turtlebot3::g_extern_control_table;
 using robotis::turtlebot3::devices::Reset;
 
 Reset::Reset(
@@ -48,8 +51,8 @@ void Reset::command(const void * request, void * response)
   uint8_t reset = 1;
 
   res->success = dxl_sdk_wrapper_->set_data_to_device(
-    extern_control_table.imu_re_calibration.addr,
-    extern_control_table.imu_re_calibration.length,
+    g_extern_control_table.imu_re_calibration.addr,
+    g_extern_control_table.imu_re_calibration.length,
     &reset,
     &res->message);
 

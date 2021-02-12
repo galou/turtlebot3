@@ -16,10 +16,13 @@
 
 #include <turtlebot3_node/conveyor_sensors/imu.hpp>
 
+#include <turtlebot3_node/conveyor_control_table.hpp>  // robotis::turtlebot3::g_extern_control_table.
+
 #include <memory>
 #include <string>
 #include <utility>
 
+using robotis::turtlebot3::g_extern_control_table;
 using robotis::turtlebot3::sensors::Imu;
 
 Imu::Imu(
@@ -45,44 +48,44 @@ void Imu::publish(
   imu_msg->header.stamp = now;
 
   imu_msg->orientation.w = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_orientation_w.addr,
-    extern_control_table.imu_orientation_w.length);
+    g_extern_control_table.imu_orientation_w.addr,
+    g_extern_control_table.imu_orientation_w.length);
 
   imu_msg->orientation.x = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_orientation_x.addr,
-    extern_control_table.imu_orientation_x.length);
+    g_extern_control_table.imu_orientation_x.addr,
+    g_extern_control_table.imu_orientation_x.length);
 
   imu_msg->orientation.y = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_orientation_y.addr,
-    extern_control_table.imu_orientation_y.length);
+    g_extern_control_table.imu_orientation_y.addr,
+    g_extern_control_table.imu_orientation_y.length);
 
   imu_msg->orientation.z = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_orientation_z.addr,
-    extern_control_table.imu_orientation_z.length);
+    g_extern_control_table.imu_orientation_z.addr,
+    g_extern_control_table.imu_orientation_z.length);
 
   imu_msg->angular_velocity.x = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_angular_velocity_x.addr,
-    extern_control_table.imu_angular_velocity_x.length);
+    g_extern_control_table.imu_angular_velocity_x.addr,
+    g_extern_control_table.imu_angular_velocity_x.length);
 
   imu_msg->angular_velocity.y = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_angular_velocity_y.addr,
-    extern_control_table.imu_angular_velocity_y.length);
+    g_extern_control_table.imu_angular_velocity_y.addr,
+    g_extern_control_table.imu_angular_velocity_y.length);
 
   imu_msg->angular_velocity.z = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_angular_velocity_z.addr,
-    extern_control_table.imu_angular_velocity_z.length);
+    g_extern_control_table.imu_angular_velocity_z.addr,
+    g_extern_control_table.imu_angular_velocity_z.length);
 
   imu_msg->linear_acceleration.x = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_linear_acceleration_x.addr,
-    extern_control_table.imu_linear_acceleration_x.length);
+    g_extern_control_table.imu_linear_acceleration_x.addr,
+    g_extern_control_table.imu_linear_acceleration_x.length);
 
   imu_msg->linear_acceleration.y = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_linear_acceleration_y.addr,
-    extern_control_table.imu_linear_acceleration_y.length);
+    g_extern_control_table.imu_linear_acceleration_y.addr,
+    g_extern_control_table.imu_linear_acceleration_y.length);
 
   imu_msg->linear_acceleration.z = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_linear_acceleration_z.addr,
-    extern_control_table.imu_linear_acceleration_z.length);
+    g_extern_control_table.imu_linear_acceleration_z.addr,
+    g_extern_control_table.imu_linear_acceleration_z.length);
 
   auto mag_msg = std::make_unique<sensor_msgs::msg::MagneticField>();
 
@@ -90,16 +93,16 @@ void Imu::publish(
   mag_msg->header.stamp = now;
 
   mag_msg->magnetic_field.x = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_magnetic_x.addr,
-    extern_control_table.imu_magnetic_x.length);
+    g_extern_control_table.imu_magnetic_x.addr,
+    g_extern_control_table.imu_magnetic_x.length);
 
   mag_msg->magnetic_field.y = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_magnetic_y.addr,
-    extern_control_table.imu_magnetic_y.length);
+    g_extern_control_table.imu_magnetic_y.addr,
+    g_extern_control_table.imu_magnetic_y.length);
 
   mag_msg->magnetic_field.z = dxl_sdk_wrapper->get_data_from_device<float>(
-    extern_control_table.imu_magnetic_z.addr,
-    extern_control_table.imu_magnetic_z.length);
+    g_extern_control_table.imu_magnetic_z.addr,
+    g_extern_control_table.imu_magnetic_z.length);
 
   imu_pub_->publish(std::move(imu_msg));
   mag_pub_->publish(std::move(mag_msg));

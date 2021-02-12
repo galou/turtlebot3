@@ -23,33 +23,27 @@ using robotis::turtlebot3::Conveyor;
 using namespace std::chrono_literals;
 
 Conveyor::Conveyor(const std::string & usb_port)
-  : Node("turtlebot3__conveyor_node", rclcpp::NodeOptions().use_intra_process_comms(true))
+  : Node("turtlebot3_conveyor_node", rclcpp::NodeOptions().use_intra_process_comms(true))
 {
   RCLCPP_INFO(get_logger(), "Init TurtleBot3 Conveyor Node");
   node_handle_ = std::shared_ptr<::rclcpp::Node>(this, [](::rclcpp::Node *) {});
 
-  init_dynamixel_sdk_wrapper(usb_port);
-  check_device_status();
+  initDynamixelSdkWrapper(usb_port);
+  checkDeviceStatus();
 
-  add_motors();
-  add_wheels();
-  add_sensors();
-  add_devices();
+  addMotors();
+  addSensors();
+  addDevices();
 
   run();
 }
 
-Conveyor::Wheels * Conveyor::get_wheels()
-{
-  return &wheels_;
-}
-
-Conveyor::Motors * Conveyor::get_motors()
+Conveyor::Motors * Conveyor::getMotors()
 {
   return &motors_;
 }
 
-void Conveyor::init_dynamixel_sdk_wrapper(const std::string & usb_port)
+void Conveyor::initDynamixelSdkWrapper(const std::string & usb_port)
 {
   /* 200 is the ID declared in the example sketches of the "Turtlebot3 ROS2"
    * Arduino library, in the file "conveyor.cpp", variable ID_DXL_SLAVE.
@@ -69,13 +63,13 @@ void Conveyor::init_dynamixel_sdk_wrapper(const std::string & usb_port)
   dxl_sdk_wrapper_ = std::make_shared<DynamixelSDKWrapper>(opencr);
 
   dxl_sdk_wrapper_->init_read_memory(
-    extern_control_table.millis.addr,
-    (extern_control_table.profile_acceleration_3.addr - extern_control_table.millis.addr) +
-    extern_control_table.profile_acceleration_3.length
+    g_extern_control_table.millis.addr,
+    (g_extern_control_table.profile_acceleration_3.addr - g_extern_control_table.millis.addr) +
+    g_extern_control_table.profile_acceleration_3.length
   );
 }
 
-void Conveyor::check_device_status()
+void Conveyor::checkDeviceStatus()
 {
   if (not dxl_sdk_wrapper_->is_connected_to_device())
   {
@@ -87,8 +81,8 @@ void Conveyor::check_device_status()
   std::string sdk_msg;
   uint8_t reset = 1;
   dxl_sdk_wrapper_->set_data_to_device(
-      extern_control_table.imu_re_calibration.addr,
-      extern_control_table.imu_re_calibration.length,
+      g_extern_control_table.imu_re_calibration.addr,
+      g_extern_control_table.imu_re_calibration.length,
       &reset,
       &sdk_msg);
 
@@ -97,8 +91,8 @@ void Conveyor::check_device_status()
   RCLCPP_INFO(this->get_logger(), "Calibration End");
 
   int8_t device_status = dxl_sdk_wrapper_->get_data_from_device<int8_t>(
-    extern_control_table.device_status.addr,
-    extern_control_table.device_status.length);
+    g_extern_control_table.device_status.addr,
+    g_extern_control_table.device_status.length);
 
   const int8_t NOT_CONNECTED_MOTOR = -1;
   switch (device_status) {
@@ -111,7 +105,7 @@ void Conveyor::check_device_status()
   }
 }
 
-void Conveyor::add_motors()
+void Conveyor::addMotors()
 {
   RCLCPP_INFO(this->get_logger(), "Add Motors");
 
@@ -128,18 +122,7 @@ void Conveyor::add_motors()
     motors_.profile_acceleration);
 }
 
-void Conveyor::add_wheels()
-{
-  this->declare_parameter("wheels.separation", 0.160);
-  this->declare_parameter("wheels.radius", 0.033);
-
-  this->get_parameter<float>("wheels.separation", wheels_.separation);
-  this->get_parameter<float>("wheels.radius", wheels_.radius);
-
-  RCLCPP_INFO(this->get_logger(), "Wheels added");
-}
-
-void Conveyor::add_sensors()
+void Conveyor::addSensors()
 {
   this->declare_parameter("sensors.bumper_1", false);
   this->declare_parameter("sensors.bumper_2", false);
@@ -186,7 +169,7 @@ void Conveyor::add_sensors()
   RCLCPP_INFO(this->get_logger(), "Sensors added");
 }
 
-void Conveyor::add_devices()
+void Conveyor::addDevices()
 {
   devices_["motor_power"] =
     new devices::MotorPower(node_handle_, dxl_sdk_wrapper_, "motor_power");
@@ -202,14 +185,14 @@ void Conveyor::run()
 {
   RCLCPP_INFO(this->get_logger(), "Run!");
 
-  publish_timer(std::chrono::milliseconds(50));
-  heartbeat_timer(std::chrono::milliseconds(100));
+  initPublishTimer(std::chrono::milliseconds(50));
+  initHeartBeatTimer(std::chrono::milliseconds(100));
 
-  parameter_event_callback();
-  cmd_vel_callback();
+  initParamClient();
+  initCmdVelSubscriber();
 }
 
-void Conveyor::publish_timer(const std::chrono::milliseconds timeout)
+void Conveyor::initPublishTimer(const std::chrono::milliseconds timeout)
 {
   publish_timer_ = this->create_wall_timer(
     timeout,
@@ -226,7 +209,7 @@ void Conveyor::publish_timer(const std::chrono::milliseconds timeout)
   );
 }
 
-void Conveyor::heartbeat_timer(const std::chrono::milliseconds timeout)
+void Conveyor::initHeartBeatTimer(const std::chrono::milliseconds timeout)
 {
   heartbeat_timer_ = this->create_wall_timer(
     timeout,
@@ -236,8 +219,8 @@ void Conveyor::heartbeat_timer(const std::chrono::milliseconds timeout)
       std::string msg;
 
       dxl_sdk_wrapper_->set_data_to_device(
-        extern_control_table.heartbeat.addr,
-        extern_control_table.heartbeat.length,
+        g_extern_control_table.heartbeat.addr,
+        g_extern_control_table.heartbeat.length,
         &count,
         &msg);
 
@@ -248,7 +231,7 @@ void Conveyor::heartbeat_timer(const std::chrono::milliseconds timeout)
   );
 }
 
-void Conveyor::parameter_event_callback()
+void Conveyor::initParamClient()
 {
   priv_parameters_client_ = std::make_shared<rclcpp::AsyncParametersClient>(this);
   while (!priv_parameters_client_->wait_for_service(std::chrono::seconds(1))) {
@@ -288,11 +271,11 @@ void Conveyor::parameter_event_callback()
           data.dword[2] = static_cast<int32_t>(motors_.profile_acceleration);
           data.dword[3] = static_cast<int32_t>(motors_.profile_acceleration);
 
-          uint16_t start_addr = extern_control_table.profile_acceleration_0.addr;
+          uint16_t start_addr = g_extern_control_table.profile_acceleration_0.addr;
           uint16_t addr_length =
-            (extern_control_table.profile_acceleration_3.addr -
-            extern_control_table.profile_acceleration_0.addr) +
-            extern_control_table.profile_acceleration_3.length;
+            (g_extern_control_table.profile_acceleration_3.addr -
+            g_extern_control_table.profile_acceleration_0.addr) +
+            g_extern_control_table.profile_acceleration_3.length;
 
           uint8_t * p_data = &data.byte[0];
 
@@ -310,7 +293,7 @@ void Conveyor::parameter_event_callback()
   parameter_event_sub_ = priv_parameters_client_->on_parameter_event(param_event_callback);
 }
 
-void Conveyor::cmd_vel_callback()
+void Conveyor::initCmdVelSubscriber()
 {
   auto qos = rclcpp::QoS(rclcpp::KeepLast(10));
   cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
@@ -332,11 +315,11 @@ void Conveyor::cmd_vel_callback()
       data.dword[4] = 0;
       data.dword[5] = static_cast<int32_t>(msg->angular.z * 100);
 
-      uint16_t start_addr = extern_control_table.cmd_velocity_linear_x.addr;
+      uint16_t start_addr = g_extern_control_table.cmd_velocity_linear_x.addr;
       uint16_t addr_length =
-      (extern_control_table.cmd_velocity_angular_z.addr -
-      extern_control_table.cmd_velocity_linear_x.addr) +
-      extern_control_table.cmd_velocity_angular_z.length;
+      (g_extern_control_table.cmd_velocity_angular_z.addr -
+      g_extern_control_table.cmd_velocity_linear_x.addr) +
+      g_extern_control_table.cmd_velocity_angular_z.length;
 
       uint8_t * p_data = &data.byte[0];
 

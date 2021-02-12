@@ -16,9 +16,12 @@
 
 #include <turtlebot3_node/conveyor_devices/motor_power.hpp>
 
+#include <turtlebot3_node/conveyor_control_table.hpp>  // robotis::turtlebot3::g_extern_control_table.
+
 #include <memory>
 #include <string>
 
+using robotis::turtlebot3::g_extern_control_table;
 using robotis::turtlebot3::devices::MotorPower;
 
 MotorPower::MotorPower(
@@ -45,8 +48,8 @@ void MotorPower::command(const void * request, void * response)
   std_srvs::srv::SetBool::Response * res = (std_srvs::srv::SetBool::Response *)response;
 
   res->success = dxl_sdk_wrapper_->set_data_to_device(
-    extern_control_table.motor_torque_enable.addr,
-    extern_control_table.motor_torque_enable.length,
+    g_extern_control_table.motor_torque_enable.addr,
+    g_extern_control_table.motor_torque_enable.length,
     reinterpret_cast<uint8_t *>(&req.data),
     &res->message);
 }

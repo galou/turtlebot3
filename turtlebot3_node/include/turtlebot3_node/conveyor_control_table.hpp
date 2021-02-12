@@ -24,6 +24,8 @@
 
 #include <stdlib.h>
 
+#include <cstdint>  // For uint8_t, uint16_t.
+
 namespace robotis
 {
 namespace turtlebot3
@@ -42,6 +44,10 @@ typedef struct
   uint8_t rw;
 } ControlItem;
 
+/* The addresses must correspond to the definition of enum ControlTableItemAddr
+ * in conveyor.cpp of the sketch running on the OpenCR.
+ */
+// In vim, you can use `'<,'>s/ADDR_\(\w*\)\s*=\s*\(\d\+\),.*/ControlItem \L\1\E = {\2, RAM, ?, READ?};` to format from the sketch.
 typedef struct
 {
   ControlItem model_number = {0, EEPROM, 2, READ};
@@ -92,34 +98,58 @@ typedef struct
   ControlItem imu_orientation_y = {104, RAM, 4, READ};
   ControlItem imu_orientation_z = {108, RAM, 4, READ};
 
-  ControlItem present_current_0 = {120, RAM, 4, READ};
-  ControlItem present_current_1 = {124, RAM, 4, READ};
-  ControlItem present_current_2 = {128, RAM, 4, READ};
-  ControlItem present_current_3 = {132, RAM, 4, READ};
-  ControlItem present_position_0 = {136, RAM, 4, READ};
-  ControlItem present_position_1 = {140, RAM, 4, READ};
-  ControlItem present_position_2 = {144, RAM, 4, READ};
-  ControlItem present_position_3 = {148, RAM, 4, READ};
-  ControlItem present_velocity_0 = {152, RAM, 4, READ};
-  ControlItem present_velocity_1 = {156, RAM, 4, READ};
-  ControlItem present_velocity_2 = {160, RAM, 4, READ};
-  ControlItem present_velocity_3 = {164, RAM, 4, READ};
+  ControlItem present_joint_current_0 = {120, RAM, 4, READ};
+  ControlItem present_joint_current_1 = {124, RAM, 4, READ};
+  ControlItem present_joint_current_2 = {128, RAM, 4, READ};
+  ControlItem present_joint_current_3 = {132, RAM, 4, READ};
+  ControlItem present_joint_position_0 = {136, RAM, 4, READ};
+  ControlItem present_joint_position_1 = {140, RAM, 4, READ};
+  ControlItem present_joint_position_2 = {144, RAM, 4, READ};
+  ControlItem present_joint_position_3 = {148, RAM, 4, READ};
+  ControlItem present_joint_velocity_0 = {152, RAM, 4, READ};
+  ControlItem present_joint_velocity_1 = {156, RAM, 4, READ};
+  ControlItem present_joint_velocity_2 = {160, RAM, 4, READ};
+  ControlItem present_joint_velocity_3 = {164, RAM, 4, READ};
+  ControlItem present_wheel_current_0 = {168, RAM, 4, READ};
+  ControlItem present_wheel_current_1 = {172, RAM, 4, READ};
+  ControlItem present_wheel_current_2 = {176, RAM, 4, READ};
+  ControlItem present_wheel_current_3 = {180, RAM, 4, READ};
+  ControlItem present_wheel_position_0 = {184, RAM, 4, READ};
+  ControlItem present_wheel_position_1 = {188, RAM, 4, READ};
+  ControlItem present_wheel_position_2 = {192, RAM, 4, READ};
+  ControlItem present_wheel_position_3 = {196, RAM, 4, READ};
+  ControlItem present_wheel_velocity_0 = {200, RAM, 4, READ};
+  ControlItem present_wheel_velocity_1 = {204, RAM, 4, READ};
+  ControlItem present_wheel_velocity_2 = {208, RAM, 4, READ};
+  ControlItem present_wheel_velocity_3 = {212, RAM, 4, READ};
 
-  ControlItem motor_torque_enable = {173, RAM, 1, READ_WRITE};
+  /* Used command velocity. */
+  ControlItem cmd_vel_source = {220, RAM, 1, READ};
+  ControlItem used_cmd_vel_linear_x = {221, RAM, 4, READ};
+  ControlItem used_cmd_vel_linear_y = {225, RAM, 4, READ};
+  ControlItem used_cmd_vel_angular_z = {229, RAM, 4, READ};
 
-  ControlItem cmd_velocity_linear_x = {174, RAM, 4, READ_WRITE};
-  ControlItem cmd_velocity_linear_y = {178, RAM, 4, READ_WRITE};
-  ControlItem cmd_velocity_linear_z = {182, RAM, 4, READ_WRITE};
-  ControlItem cmd_velocity_angular_x = {186, RAM, 4, READ_WRITE};
-  ControlItem cmd_velocity_angular_y = {190, RAM, 4, READ_WRITE};
-  ControlItem cmd_velocity_angular_z = {194, RAM, 4, READ_WRITE};
+  /* Position from odom, velocity from odom. */
+  ControlItem odom_x = {234, RAM, 4, READ};
+  ControlItem odom_y = {238, RAM, 4, READ};
+  ControlItem odom_yaw = {242, RAM, 4, READ};
+  ControlItem reset_odom = {246, RAM, 1, READ_WRITE};
 
-  ControlItem profile_acceleration_0 = {198, RAM, 4, READ_WRITE};
-  ControlItem profile_acceleration_1 = {202, RAM, 4, READ_WRITE};
-  ControlItem profile_acceleration_2 = {206, RAM, 4, READ_WRITE};
-  ControlItem profile_acceleration_3 = {210, RAM, 4, READ_WRITE};
+  ControlItem motor_torque_enable = {249, RAM, 1, READ_WRITE};
+
+  ControlItem cmd_velocity_linear_x = {250, RAM, 4, READ_WRITE};
+  ControlItem cmd_velocity_linear_y = {254, RAM, 4, READ_WRITE};
+  ControlItem cmd_velocity_linear_z = {258, RAM, 4, READ_WRITE};
+  ControlItem cmd_velocity_angular_x = {262, RAM, 4, READ_WRITE};
+  ControlItem cmd_velocity_angular_y = {266, RAM, 4, READ_WRITE};
+  ControlItem cmd_velocity_angular_z = {270, RAM, 4, READ_WRITE};
+
+  ControlItem profile_acceleration_0 = {274, RAM, 4, READ_WRITE};
+  ControlItem profile_acceleration_1 = {278, RAM, 4, READ_WRITE};
+  ControlItem profile_acceleration_2 = {282, RAM, 4, READ_WRITE};
+  ControlItem profile_acceleration_3 = {284, RAM, 4, READ_WRITE};
 } ControlTable;
 
-const ControlTable extern_control_table;
+const ControlTable g_extern_control_table;
 }  // namespace turtlebot3
 }  // namespace robotis

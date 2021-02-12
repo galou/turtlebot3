@@ -16,10 +16,14 @@
 
 #include <turtlebot3_node/conveyor_sensors/sensor_state.hpp>
 
+#include <turtlebot3_node/conveyor_control_table.hpp>  // robotis::turtlebot3::g_extern_control_table.
+
+#include <cstdint>  // uint8_t.
 #include <memory>
 #include <string>
 #include <utility>
 
+using robotis::turtlebot3::g_extern_control_table;
 using robotis::turtlebot3::sensors::SensorState;
 
 SensorState::SensorState(
@@ -50,57 +54,72 @@ void SensorState::publish(
 
   msg->header.stamp = now;
 
-  if (bumper_forward_ || bumper_backward_) {
+  if (bumper_forward_ or bumper_backward_)
+  {
     uint8_t bumper_push_state;
     uint8_t bumper_forward_state;
     uint8_t bumper_backward_state;
 
     bumper_forward_state = dxl_sdk_wrapper->get_data_from_device<uint8_t>(
-      extern_control_table.bumper_1.addr,
-      extern_control_table.bumper_1.length);
+      g_extern_control_table.bumper_1.addr,
+      g_extern_control_table.bumper_1.length);
 
     bumper_backward_state = dxl_sdk_wrapper->get_data_from_device<uint8_t>(
-      extern_control_table.bumper_2.addr,
-      extern_control_table.bumper_2.length);
+      g_extern_control_table.bumper_2.addr,
+      g_extern_control_table.bumper_2.length);
 
     bumper_push_state = bumper_forward_state << 0;
     bumper_push_state |= bumper_backward_state << 1;
 
     msg->bumper = bumper_push_state;
-  } else if (!bumper_forward_ && !bumper_backward_) {
+  }
+  else if (not(bumper_forward_) and not(bumper_backward_))
+  {
     msg->bumper = 0;
   }
 
-  if (cliff_) {
+  if (cliff_)
+  {
     msg->cliff = dxl_sdk_wrapper->get_data_from_device<float>(
-      extern_control_table.ir.addr,
-      extern_control_table.ir.length);
-  } else {
+      g_extern_control_table.ir.addr,
+      g_extern_control_table.ir.length);
+  }
+  else
+  {
     msg->cliff = 0.0f;
   }
 
-  if (sonar_) {
+  if (sonar_)
+  {
     msg->sonar = dxl_sdk_wrapper->get_data_from_device<float>(
-      extern_control_table.sonar.addr,
-      extern_control_table.sonar.length);
-  } else {
+      g_extern_control_table.sonar.addr,
+      g_extern_control_table.sonar.length);
+  }
+  else
+  {
     msg->sonar = 0.0f;
   }
 
-  if (illumination_) {
+  if (illumination_)
+  {
     msg->illumination = dxl_sdk_wrapper->get_data_from_device<float>(
-      extern_control_table.illumination.addr,
-      extern_control_table.illumination.length);
-  } else {
+      g_extern_control_table.illumination.addr,
+      g_extern_control_table.illumination.length);
+  }
+  else
+  {
     msg->illumination = 0.0f;
   }
 
 
-  if (sonar_) {
+  if (sonar_)
+  {
     msg->sonar = dxl_sdk_wrapper->get_data_from_device<float>(
-      extern_control_table.sonar.addr,
-      extern_control_table.sonar.length);
-  } else {
+      g_extern_control_table.sonar.addr,
+      g_extern_control_table.sonar.length);
+  }
+  else
+  {
     msg->sonar = 0.0f;
   }
 
@@ -110,12 +129,12 @@ void SensorState::publish(
     uint8_t button_1_state;
 
     button_0_state = dxl_sdk_wrapper->get_data_from_device<uint8_t>(
-      extern_control_table.button_1.addr,
-      extern_control_table.button_1.length);
+      g_extern_control_table.button_1.addr,
+      g_extern_control_table.button_1.length);
 
     button_1_state = dxl_sdk_wrapper->get_data_from_device<uint8_t>(
-      extern_control_table.button_2.addr,
-      extern_control_table.button_2.length);
+      g_extern_control_table.button_2.addr,
+      g_extern_control_table.button_2.length);
 
     button_push_state = button_0_state << 0;
     button_push_state |= button_1_state << 1;
@@ -124,20 +143,17 @@ void SensorState::publish(
   }
 
   msg->torque = dxl_sdk_wrapper->get_data_from_device<bool>(
-    extern_control_table.motor_torque_enable.addr,
-    extern_control_table.motor_torque_enable.length);
+    g_extern_control_table.motor_torque_enable.addr,
+    g_extern_control_table.motor_torque_enable.length);
 
-  msg->left_encoder = dxl_sdk_wrapper->get_data_from_device<int32_t>(
-    extern_control_table.present_position_0.addr,
-    extern_control_table.present_position_0.length);
-
-  msg->right_encoder = dxl_sdk_wrapper->get_data_from_device<int32_t>(
-    extern_control_table.present_position_1.addr,
-    extern_control_table.present_position_1.length);
+  /* Non-supported on the conveyor. Positions and velocities sent via
+   * /joint_states. */
+  msg->left_encoder = 0;
+  msg->right_encoder = 0;
 
   msg->battery = 0.01f * dxl_sdk_wrapper->get_data_from_device<int32_t>(
-    extern_control_table.battery_voltage.addr,
-    extern_control_table.battery_voltage.length);
+    g_extern_control_table.battery_voltage.addr,
+    g_extern_control_table.battery_voltage.length);
 
   pub_->publish(std::move(msg));
 }

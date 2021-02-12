@@ -18,6 +18,7 @@
 
 #include <sensor_msgs/msg/joint_state.hpp>
 
+#include <cstdint>  // For uint8_t.
 #include <memory>
 #include <string>
 
@@ -29,13 +30,18 @@ namespace turtlebot3
 {
 namespace sensors
 {
-constexpr uint8_t JOINT_NUM = 4;
 
-// ref) http://emanual.robotis.com/docs/en/dxl/x/xl430-w250/#goal-velocity104
-constexpr double RPM_TO_MS = 0.229 * 0.0034557519189487725;
+constexpr uint8_t JOINT_NUM{8};
 
-// 0.087890625[deg] * 3.14159265359 / 180 = 0.001533981f
-constexpr double TICK_TO_RAD = 0.001533981;
+/* The wheel radius must correspond to the definition in the firmware running
+ * on the OpenCR. In m.*/
+constexpr double WHEEL_RADIUS_M{0.033};
+
+/* The joint positions and velocities are given in rad and rad/s by the robot. */
+constexpr double JOINT_ROBOT_TO_RAD{1.0 / 1000.0};
+
+/* The wheel positions and velocities are given in mm and mm/s by the robot. */
+constexpr double WHEEL_ROBOT_TO_RAD{1.0 / WHEEL_RADIUS_M / 1000.0};
 
 class JointState : public Sensors
 {

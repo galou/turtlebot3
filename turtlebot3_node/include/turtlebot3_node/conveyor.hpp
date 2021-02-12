@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <turtlebot3_node/conveyor_control_table.hpp>
+#include <turtlebot3_node/conveyor_control_table.hpp>  // robotis::turtlebot3::g_extern_control_table.
 #include <turtlebot3_node/conveyor_devices/devices.hpp>
 #include <turtlebot3_node/conveyor_devices/motor_power.hpp>
 #include <turtlebot3_node/conveyor_devices/reset.hpp>
@@ -56,64 +56,59 @@ namespace robotis
 {
 namespace turtlebot3
 {
-extern const ControlTable extern_control_table;
+
+using robotis::turtlebot3::g_extern_control_table;
+
 class Conveyor : public rclcpp::Node
 {
-public:
-  typedef struct
-  {
-    float separation;
-    float radius;
-  } Wheels;
+  public:
 
-  typedef struct
-  {
-    float profile_acceleration_constant;
-    float profile_acceleration;
-  } Motors;
+    struct Motors
+    {
+      float profile_acceleration_constant;
+      float profile_acceleration;
+    };
 
-  explicit Conveyor(const std::string & usb_port);
-  virtual ~Conveyor() {}
+    explicit Conveyor(const std::string & usb_port);
+    virtual ~Conveyor() {}
 
-  Wheels * get_wheels();
-  Motors * get_motors();
+    Motors * getMotors();
 
-private:
-  void init_dynamixel_sdk_wrapper(const std::string & usb_port);
-  void check_device_status();
+  private:
 
-  void add_sensors();
-  void add_devices();
-  void add_motors();
-  void add_wheels();
+    void initDynamixelSdkWrapper(const std::string & usb_port);
+    void checkDeviceStatus();
 
-  void run();
+    void addSensors();
+    void addDevices();
+    void addMotors();
 
-  void publish_timer(const std::chrono::milliseconds timeout);
-  void heartbeat_timer(const std::chrono::milliseconds timeout);
+    void run();
 
-  void cmd_vel_callback();
-  void parameter_event_callback();
+    void initPublishTimer(const std::chrono::milliseconds timeout);
+    void initHeartBeatTimer(const std::chrono::milliseconds timeout);
 
-  Wheels wheels_;
-  Motors motors_;
+    void initCmdVelSubscriber();
+    void initParamClient();
 
-  std::shared_ptr<DynamixelSDKWrapper> dxl_sdk_wrapper_;
+    Motors motors_;
 
-  std::list<std::shared_ptr<sensors::Sensors>> sensors_;
-  std::map<std::string, devices::Devices *> devices_;
+    std::shared_ptr<DynamixelSDKWrapper> dxl_sdk_wrapper_;
 
-  std::unique_ptr<Odometry> odom_;
+    std::list<std::shared_ptr<sensors::Sensors>> sensors_;
+    std::map<std::string, devices::Devices *> devices_;
 
-  rclcpp::Node::SharedPtr node_handle_;
+    std::unique_ptr<Odometry> odom_;
 
-  rclcpp::TimerBase::SharedPtr publish_timer_;
-  rclcpp::TimerBase::SharedPtr heartbeat_timer_;
+    rclcpp::Node::SharedPtr node_handle_;
 
-  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
+    rclcpp::TimerBase::SharedPtr publish_timer_;
+    rclcpp::TimerBase::SharedPtr heartbeat_timer_;
 
-  rclcpp::AsyncParametersClient::SharedPtr priv_parameters_client_;
-  rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr parameter_event_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
+
+    rclcpp::AsyncParametersClient::SharedPtr priv_parameters_client_;
+    rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr parameter_event_sub_;
 };
 
 }  // namespace turtlebot3

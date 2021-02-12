@@ -14,13 +14,17 @@
 //
 // Author: Darby Lim
 
+#include <turtlebot3_node/conveyor_sensors/joint_state.hpp>
+
+#include <turtlebot3_node/conveyor_control_table.hpp>  // robotis::turtlebot3::g_extern_control_table.
+
 #include <array>
+#include <cstdint>  // int32_t, size_t.
 #include <memory>
 #include <string>
 #include <utility>
 
-#include <turtlebot3_node/conveyor_sensors/joint_state.hpp>
-
+using robotis::turtlebot3::g_extern_control_table;
 using robotis::turtlebot3::sensors::JointState;
 
 JointState::JointState(
@@ -38,67 +42,119 @@ void JointState::publish(
   const rclcpp::Time & now,
   std::shared_ptr<DynamixelSDKWrapper> & dxl_sdk_wrapper)
 {
-  auto msg = std::make_unique<sensor_msgs::msg::JointState>();
+  sensor_msgs::msg::JointState msg;
 
-  static std::array<int32_t, JOINT_NUM> last_diff_position, last_position;
+  /* With int32_t, we can drive the wheel motors for approx 4.3 million km so
+   * we don't need to consider overflow. */
 
-  std::array<int32_t, JOINT_NUM> position{
+  std::array<int32_t, JOINT_NUM> positions{
     dxl_sdk_wrapper->get_data_from_device<int32_t>(
-      extern_control_table.present_position_0.addr,
-      extern_control_table.present_position_0.length),
+      g_extern_control_table.present_joint_position_0.addr,
+      g_extern_control_table.present_joint_position_0.length),
     dxl_sdk_wrapper->get_data_from_device<int32_t>(
-      extern_control_table.present_position_1.addr,
-      extern_control_table.present_position_1.length),
+      g_extern_control_table.present_joint_position_1.addr,
+      g_extern_control_table.present_joint_position_1.length),
     dxl_sdk_wrapper->get_data_from_device<int32_t>(
-      extern_control_table.present_position_2.addr,
-      extern_control_table.present_position_2.length),
+      g_extern_control_table.present_joint_position_2.addr,
+      g_extern_control_table.present_joint_position_2.length),
     dxl_sdk_wrapper->get_data_from_device<int32_t>(
-      extern_control_table.present_position_3.addr,
-      extern_control_table.present_position_3.length),
+      g_extern_control_table.present_joint_position_3.addr,
+      g_extern_control_table.present_joint_position_3.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_position_0.addr,
+      g_extern_control_table.present_wheel_position_0.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_position_1.addr,
+      g_extern_control_table.present_wheel_position_1.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_position_2.addr,
+      g_extern_control_table.present_wheel_position_2.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_position_3.addr,
+      g_extern_control_table.present_wheel_position_3.length),
   };
 
-  std::array<int32_t, JOINT_NUM> velocity{
+  std::array<int32_t, JOINT_NUM> velocities{
     dxl_sdk_wrapper->get_data_from_device<int32_t>(
-      extern_control_table.present_velocity_0.addr,
-      extern_control_table.present_velocity_0.length),
+      g_extern_control_table.present_joint_velocity_0.addr,
+      g_extern_control_table.present_joint_velocity_0.length),
     dxl_sdk_wrapper->get_data_from_device<int32_t>(
-      extern_control_table.present_velocity_1.addr,
-      extern_control_table.present_velocity_1.length),
+      g_extern_control_table.present_joint_velocity_1.addr,
+      g_extern_control_table.present_joint_velocity_1.length),
     dxl_sdk_wrapper->get_data_from_device<int32_t>(
-      extern_control_table.present_velocity_2.addr,
-      extern_control_table.present_velocity_2.length),
+      g_extern_control_table.present_joint_velocity_2.addr,
+      g_extern_control_table.present_joint_velocity_2.length),
     dxl_sdk_wrapper->get_data_from_device<int32_t>(
-      extern_control_table.present_velocity_3.addr,
-      extern_control_table.present_velocity_3.length),
+      g_extern_control_table.present_joint_velocity_3.addr,
+      g_extern_control_table.present_joint_velocity_3.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_velocity_0.addr,
+      g_extern_control_table.present_wheel_velocity_0.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_velocity_1.addr,
+      g_extern_control_table.present_wheel_velocity_1.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_velocity_2.addr,
+      g_extern_control_table.present_wheel_velocity_2.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_velocity_3.addr,
+      g_extern_control_table.present_wheel_velocity_3.length),
   };
 
-  // std::array<int32_t, JOINT_NUM> current =
-  //   {dxl_sdk_wrapper->get_data_from_device<int32_t>(
-  //     extern_control_table.resent_current_left.addr,
-  //     extern_control_table.resent_current_left.length),
-  //   dxl_sdk_wrapper->get_data_from_device<int32_t>(
-  //     extern_control_table.resent_current_right.addr,
-  //     extern_control_table.resent_current_right.length)};
+  std::array<int32_t, JOINT_NUM> currents{ 
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_joint_current_0.addr,
+      g_extern_control_table.present_joint_current_0.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_joint_current_1.addr,
+      g_extern_control_table.present_joint_current_1.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_joint_current_2.addr,
+      g_extern_control_table.present_joint_current_2.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_joint_current_3.addr,
+      g_extern_control_table.present_joint_current_3.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_current_0.addr,
+      g_extern_control_table.present_wheel_current_0.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_current_1.addr,
+      g_extern_control_table.present_wheel_current_1.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_current_2.addr,
+      g_extern_control_table.present_wheel_current_2.length),
+    dxl_sdk_wrapper->get_data_from_device<int32_t>(
+      g_extern_control_table.present_wheel_current_3.addr,
+      g_extern_control_table.present_wheel_current_3.length),
+  };
 
-  msg->header.frame_id = this->frame_id_;
-  msg->header.stamp = now;
+  msg.header.frame_id = frame_id_;
+  msg.header.stamp = now;
 
-  msg->name.push_back("wheel_left_joint");
-  msg->name.push_back("wheel_right_joint");
+  msg.name.push_back("joint_0");
+  msg.name.push_back("joint_1");
+  msg.name.push_back("joint_2");
+  msg.name.push_back("joint_3");
+  msg.name.push_back("wheel_0");
+  msg.name.push_back("wheel_1");
+  msg.name.push_back("wheel_2");
+  msg.name.push_back("wheel_3");
 
-  msg->position.push_back(TICK_TO_RAD * last_diff_position[0]);
-  msg->position.push_back(TICK_TO_RAD * last_diff_position[1]);
-
-  msg->velocity.push_back(RPM_TO_MS * velocity[0]);
-  msg->velocity.push_back(RPM_TO_MS * velocity[1]);
-
-  // msg->effort.push_back(current[0]);
-  // msg->effort.push_back(current[1]);
-
-  last_diff_position[0] += (position[0] - last_position[0]);
-  last_diff_position[1] += (position[1] - last_position[1]);
-
-  last_position = position;
+  msg.position.reserve(JOINT_NUM);
+  msg.velocity.reserve(JOINT_NUM);
+  msg.effort.reserve(JOINT_NUM);
+  for (size_t i = 0; i < (JOINT_NUM / 2); ++i)
+  {
+    msg.position.push_back(JOINT_ROBOT_TO_RAD * positions[i]);
+    msg.position.push_back(JOINT_ROBOT_TO_RAD * velocities[i]);
+    msg.effort.push_back(currents[i]);
+  }
+  for (size_t i = (JOINT_NUM / 2); i < JOINT_NUM; ++i)
+  {
+    msg.position.push_back(WHEEL_ROBOT_TO_RAD * positions[i]);
+    msg.velocity.push_back(WHEEL_ROBOT_TO_RAD * velocities[i]);
+    msg.effort.push_back(currents[i]);
+  }
 
   pub_->publish(std::move(msg));
 }

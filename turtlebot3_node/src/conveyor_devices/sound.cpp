@@ -16,9 +16,12 @@
 
 #include <turtlebot3_node/conveyor_devices/sound.hpp>
 
+#include <turtlebot3_node/conveyor_control_table.hpp>  // robotis::turtlebot3::g_extern_control_table.
+
 #include <memory>
 #include <string>
 
+using robotis::turtlebot3::g_extern_control_table;
 using robotis::turtlebot3::devices::Sound;
 
 Sound::Sound(
@@ -45,8 +48,8 @@ void Sound::command(const void * request, void * response)
   turtlebot3_msgs::srv::Sound::Response * res = (turtlebot3_msgs::srv::Sound::Response *)response;
 
   res->success = dxl_sdk_wrapper_->set_data_to_device(
-    extern_control_table.sound.addr,
-    extern_control_table.sound.length,
+    g_extern_control_table.sound.addr,
+    g_extern_control_table.sound.length,
     reinterpret_cast<uint8_t *>(&req.value),
     &res->message);
 }
